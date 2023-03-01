@@ -1,0 +1,3 @@
+JW Almighty's walking data analysis playground
+
+230301 - practice for using github & git
