@@ -1,4 +1,4 @@
-function to_index = toe_off(time_20Hz, acc_20Hz, plot_state, acc_thld, peak_interval, alpha_lp)
+function [to_index, hs_index_rev] = toe_off(time_20Hz, acc_20Hz, plot_state, acc_thld, peak_interval, alpha_lp)
 
 if nargin < 6
     alpha_lp = 1;
@@ -15,7 +15,7 @@ end
 
 test_fa_lp = zeros(2,3);
 hs_time_20 = 0; % time when heel strike occurs
-to_time_20 = 0; % time when toe off occurs
+to_time_20 = 0; % time when toe off occurs 
 hs_index = 0;
 to_index = 0;
 for i = 3:length(time_20Hz)
@@ -35,7 +35,7 @@ for i = 3:length(time_20Hz)
             end
         end
     end
-    if time_20Hz(i-1) - hs_time_20(end) >= 0.06 && time_20Hz(i-1) - hs_time_20(end) < 1 % heel strike 부터 toe off 까지의 시간 threshold 임의 설정 (0.05초 부터 1초 사이)
+    if time_20Hz(i-1) - hs_time_20(end) >= 0.06 && time_20Hz(i-1) - hs_time_20(end) < 1 && test_fa_lp(i-1, 3) > 0% heel strike 부터 toe off 까지의 시간 threshold 임의 설정 (0.05초 부터 1초 사이)
         if test_fa_lp(i-1, 3) > test_fa_lp(i-2, 3) && test_fa_lp(i-1, 3) > test_fa_lp(i,3) % HS 이후 두 번째 peak가 생길 경우
             if to_time_20 == 0
                 to_time_20 = time_20Hz(i-1);
@@ -47,9 +47,13 @@ for i = 3:length(time_20Hz)
                     to_time_20 = to_time_20(1:end-1,:); % length(hs) == 63 보
                     to_index = to_index(1:end-1,:);
                 end
+                if length(to_index) > length(hs_index) || to_time_20(end-1) > hs_time_20(end)
+                    to_time_20 = to_time_20(1:end-1,:);
+                    to_index = to_index(1:end-1,:);
+                end
             end
         elseif abs(test_fa_lp(i-1,3) - test_fa_lp(i-2,3)) < abs(test_fa_lp(i,3) - test_fa_lp(i-1,3)) ...
-                && test_fa_lp(i,3) - test_fa_lp(i-1,3) < 0  
+                && test_fa_lp(i,3) - test_fa_lp(i-1,3) < 0   %  Peak 없이 기울기가 급 하락하는 경우 
             if to_time_20 == 0
                 to_time_20 = time_20Hz(i-1);
                 to_index = i-1;
@@ -64,9 +68,21 @@ for i = 3:length(time_20Hz)
         end
     end
 end
+hs_index_rev = [];
+for i = 1:length(hs_index)
+    hs_index_rev = [hs_index_rev; hs_index(i,:)];
+    if to_time_20(length(hs_index_rev),:) - hs_time_20(i,:) > 0.4 % 0.5초 이내에 toe off 가 감지되지 않는 heel strike 제거
+        if length(hs_index_rev) > 2
+            hs_index_rev = [hs_index_rev(1:end-2,:); hs_index_rev(end,:)];
+        else
+            hs_index_rev = hs_index_rev(end,:);
+        end
+    end
+end
 if strcmp(plot_state, 'on') == 1
     g_dir = acc_20Hz(:,3);
     plot(time_20Hz, g_dir); hold on
+    plot(time_20Hz(hs_index_rev), g_dir(hs_index_rev), 'ro'); hold on
     plot(time_20Hz(to_index), g_dir(to_index), 'bo')
 end
 

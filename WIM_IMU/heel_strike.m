@@ -37,7 +37,7 @@ end
 if strcmp(plot_state, 'on') == 1
     g_dir = acc_20Hz(:,3);
     plot(time_20Hz, g_dir); hold on
-    plot(time_20Hz(hs_index), g_dir(hs_index), 'ro')
+    plot(time_20Hz(hs_index), g_dir(hs_index), 'r*')
 end
 
 end

@@ -3,8 +3,8 @@ function [mean_stance, mean_swing] = phase_analyze(time, acc, hs_index, to_index
 test_time_20 = time;
 test_fa_20 = acc;
 
-hs_index_2rows = reshape(hs_index(1:2*round(length(hs_index)/2)), 2, [])';
-to_index_2rows = reshape(to_index(1:2*round(length(to_index)/2)), 2, [])';
+hs_index_2rows = reshape(hs_index(1:2*floor(length(hs_index)/2)), 2, [])';
+to_index_2rows = reshape(to_index(1:2*floor(length(to_index)/2)), 2, [])';
 
 hs_time = test_time_20(hs_index_2rows);
 to_time = test_time_20(to_index_2rows);
