@@ -1,4 +1,4 @@
-function [to_index, hs_index_rev] = toe_off(time_20Hz, acc_20Hz, plot_state, acc_thld, peak_interval, alpha_lp)
+function [to_index, hs_index_rev2] = toe_off(time_20Hz, acc_20Hz, plot_state, acc_thld, peak_interval, alpha_lp)
 
 if nargin < 6
     alpha_lp = 1;
@@ -29,7 +29,7 @@ for i = 3:length(time_20Hz)
                 hs_time_20 = [hs_time_20; time_20Hz(i-1)];
                 hs_index = [hs_index; i-1];
                 if hs_time_20(end,1) - hs_time_20(end-1,1) < peak_interval % peak이 두 번 이상 검출 되지 않게끔 thld 임의 설정, 뛰는 상황 등에서는 바뀌어야 함
-                    hs_time_20 = hs_time_20(1:end-1,:); % length(hs) == 63 보
+                    hs_time_20 = hs_time_20(1:end-1,:); 
                     hs_index = hs_index(1:end-1,:);
                 end
             end
@@ -44,7 +44,7 @@ for i = 3:length(time_20Hz)
                 to_time_20 = [to_time_20; time_20Hz(i-1)];
                 to_index = [to_index; i-1];
                 if to_time_20(end,1) - to_time_20(end-1,1) < peak_interval % peak이 두 번 이상 검출 되지 않게끔 thld 임의 설정, 뛰는 상황 등에서는 바뀌어야 함
-                    to_time_20 = to_time_20(1:end-1,:); % length(hs) == 63 보
+                    to_time_20 = to_time_20(1:end-1,:); 
                     to_index = to_index(1:end-1,:);
                 end
                 if length(to_index) > length(hs_index) || to_time_20(end-1) > hs_time_20(end)
@@ -61,28 +61,31 @@ for i = 3:length(time_20Hz)
                 to_time_20 = [to_time_20; time_20Hz(i-1)];
                 to_index = [to_index; i-1];
                 if to_time_20(end,1) - to_time_20(end-1,1) < peak_interval % peak이 두 번 이상 검출 되지 않게끔 thld 임의 설정, 뛰는 상황 등에서는 바뀌어야 함
-                    to_time_20 = to_time_20(1:end-1,:); % length(hs) == 63 보
+                    to_time_20 = to_time_20(1:end-1,:); 
                     to_index = to_index(1:end-1,:);
                 end
             end
         end
     end
 end
-hs_index_rev = [];
-for i = 1:length(hs_index)
-    hs_index_rev = [hs_index_rev; hs_index(i,:)];
-    if to_time_20(length(hs_index_rev),:) - hs_time_20(i,:) > 0.4 % 0.5초 이내에 toe off 가 감지되지 않는 heel strike 제거
-        if length(hs_index_rev) > 2
-            hs_index_rev = [hs_index_rev(1:end-2,:); hs_index_rev(end,:)];
-        else
-            hs_index_rev = hs_index_rev(end,:);
-        end
+
+% hs_index_rev2 에는 toe off index와 쌍을 이루는 heel strike만 저장
+hs_index_rev = [hs_index, zeros(size(hs_index))];
+to_index_rev = [to_index, ones(size(to_index))];
+hs_to_index = [hs_index_rev; to_index_rev];
+hs_to_index = sortrows(hs_to_index, 1);
+hs_index_rev2 = [];
+for i = 1:length(hs_to_index)-1
+    if hs_to_index(i,2) == 0 && hs_to_index(i+1,2) ~= 0
+        hs_index_rev2 = [hs_index_rev2; hs_to_index(i,1)];
     end
 end
+
+% plot 요청시 제공
 if strcmp(plot_state, 'on') == 1
     g_dir = acc_20Hz(:,3);
     plot(time_20Hz, g_dir); hold on
-    plot(time_20Hz(hs_index_rev), g_dir(hs_index_rev), 'ro'); hold on
+    plot(time_20Hz(hs_index_rev2), g_dir(hs_index_rev2), 'ro'); hold on
     plot(time_20Hz(to_index), g_dir(to_index), 'bo')
 end
 
