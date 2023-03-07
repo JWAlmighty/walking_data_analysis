@@ -4,15 +4,15 @@ function [quat, eInt] = JW_mahony(quat_prev, eInt_prev, acc, gyro, SamplePeriod,
 % % acc = double(1,3)
 % % gyro = double(1,3)
 
-if nargin < 5
+if nargin < 7
     Ki = 0;
 end
 
-if nargin < 4
-    Ki = 0.1;
+if nargin < 6
+    Kp = 0.1;
 end
 acc = acc/norm(acc);
-gyro = gyro*(pi/180);
+gyro = gyro*(pi/180); % rad/s 변환 
 
 % reference vector 형성 
 v = [2*(quat_prev(2)*quat_prev(4) - quat_prev(1)*quat_prev(3))
