@@ -13,13 +13,24 @@ if nargin < 4
 end
 acc = acc/norm(acc);
 gyro = gyro*(pi/180);
+
+% reference vector 형성 
 v = [2*(quat_prev(2)*quat_prev(4) - quat_prev(1)*quat_prev(3))
         2*(quat_prev(1)*quat_prev(2) + quat_prev(3)*quat_prev(4))
         (quat_prev(1)^2 - quat_prev(2)^2 - quat_prev(3)^2 + quat_prev(4)^2)];
+
+% acc 방향과 reference vector cross product: error vector 추출
 e = cross(acc, v);
+
 eInt = eInt_prev + e*SamplePeriod;
+
+% gyro 값에 error 보정
 gyro = gyro + Kp*e + Ki*eInt;
+
+% quaternion 변화량
 qDot = 0.5*quatmultiply(quat_prev, [0, gyro]);
+
+% quaternion 적분
 quat = quat_prev + qDot*SamplePeriod;
 quat = quat / norm(quat);
 
