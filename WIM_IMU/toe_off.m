@@ -1,5 +1,5 @@
 function [to_index, hs_index_rev2] = toe_off(time_20Hz, acc_20Hz, plot_state, acc_thld, peak_interval, alpha_lp)
-
+% toe off index와 그와 쌍을 이루는 heel strike 검출
 if nargin < 6
     alpha_lp = 1;
 end
@@ -70,8 +70,8 @@ for i = 3:length(time_20Hz)
 end
 
 % hs_index_rev2 에는 toe off index와 쌍을 이루는 heel strike만 저장
-hs_index_rev = [hs_index, zeros(size(hs_index))];
-to_index_rev = [to_index, ones(size(to_index))];
+hs_index_rev = [hs_index, zeros(size(hs_index))]; % 2열이 0
+to_index_rev = [to_index, ones(size(to_index))]; % 2열이 1
 hs_to_index = [hs_index_rev; to_index_rev];
 hs_to_index = sortrows(hs_to_index, 1);
 hs_index_rev2 = [];
