@@ -24,6 +24,8 @@ x_normal = [ % normal vector
     1 0 0
     ];
 
+titles = ["Forward Flexion", "Lateral Flexion", "Twist"];
+
 for j = 1:3
     for i = 1:length(rotm)
         x(i,:) = (reshape(rotm(:,:,i), [3,3])*x_vec(j,:)')';
@@ -52,6 +54,7 @@ for j = 1:3
     end
     subplot(3,1, j)
     plot(x_theta(:,j)); hold on
+    title(titles(j))
 end
 fwd = x_theta(:,1);
 lat = x_theta(:,2);
