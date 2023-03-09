@@ -25,7 +25,7 @@ x_normal = [ % normal vector
     ];
 
 for j = 1:3
-    for i = 1:length(x)
+    for i = 1:length(rotm)
         x(i,:) = (reshape(rotm(:,:,i), [3,3])*x_vec(j,:)')';
         x2(i,:) = (reshape(rotm(:,:,i), [3,3])*x_vec2(j,:)')';
 
