@@ -1,4 +1,4 @@
-function quat = JW_madgwick(quat_prev, acc, gyro, SamplePeriod, Beta)
+ function quat = JW_madgwick(quat_prev, acc, gyro, SamplePeriod, Beta)
 % % 함수를 사용하기 전에, 초기 값으로 quat_prev = [1, 0, 0, 0] 지정 필요
 % % 함수를 사용하기 전에, 초기 값으로 eInt_prev = zeros(1,3) 지정 필요
 % % acc = double(1,3)
