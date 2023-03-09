@@ -1,4 +1,11 @@
 function score = OWAS_analyze(time, fwd, lat, twist, thld_fwd, thld_lat, thld_twist)
+% input: time, fwd, lat, twist (JW_quat2rpy 함수 사용 결과)
+% output: OWAS 점수
+
+% 0. quat에서 시작
+% 1. JW_quat2rpy로 fwd, lat, twist 취득
+% 2. 그대로 OWAS_analyze에 적용
+% counter_lift 함수가 내장되어 있음
 if nargin < 7
     thld_twist = 30;
 end
