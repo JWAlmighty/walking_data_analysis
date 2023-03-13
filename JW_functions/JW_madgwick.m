@@ -4,6 +4,15 @@
 % % acc = double(1,3)
 % % gyro = double(1,3)
 
+% % 사용 예시
+% % % close all
+% % quat_prev = [1, 0, 0, 0];
+% % for i = 1:length(time)
+% %     quat = JW_madgwick(quat_prev, Accelerometer(i,:), Gyroscope(i,:), 1/256);
+% %     quat_prev = quat;
+% %     euler5(i,:) = quatern2euler(quaternConj(quat)) * (180/pi);
+% % end
+
 if nargin < 5
     Beta = 0.043;
 end
