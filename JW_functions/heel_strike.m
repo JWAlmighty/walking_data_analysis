@@ -1,5 +1,6 @@
 function hs_index = heel_strike(time_20Hz, acc_20Hz, plot_state, acc_thld, peak_interval, alpha_lp)
-
+% input: time, acc (g_direction만 추출) 등등
+% output: heel strike index
 if nargin < 6
     alpha_lp = 1;
 end

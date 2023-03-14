@@ -35,7 +35,7 @@ for i = 3:length(time_20Hz)
             end
         end
     end
-    if time_20Hz(i-1) - hs_time_20(end) >= 0.06 && time_20Hz(i-1) - hs_time_20(end) < 0.3 && test_fa_lp(i-1, 3) > 0% heel strike 부터 toe off 까지의 시간 threshold 임의 설정 (0.06초 부터 0.3초 사이)
+    if hs_index(1) > 0 && time_20Hz(i-1) - hs_time_20(end) >= 0.06 && time_20Hz(i-1) - hs_time_20(end) < 0.3 && test_fa_lp(i-1, 3) > 0% heel strike 부터 toe off 까지의 시간 threshold 임의 설정 (0.06초 부터 0.3초 사이)
         if test_fa_lp(i-1, 3) > test_fa_lp(i-2, 3) && test_fa_lp(i-1, 3) > test_fa_lp(i,3) % HS 이후 두 번째 peak가 생길 경우
             if to_time_20 == 0
                 to_time_20 = time_20Hz(i-1);
