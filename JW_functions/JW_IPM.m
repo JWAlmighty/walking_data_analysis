@@ -11,7 +11,8 @@ if nargin < 6
     Hz = 20;
 end
 if nargin < 5
-    K = 1.3;
+    K = 1.3; % heading calibration 및 단위 조정 (단위: m/s^2) 후
+%     K = 1.5; % EB IMU raw data (heading calibration 없고, 단위가 G)
 end
 if nargin < 4
     height = 1.75;
