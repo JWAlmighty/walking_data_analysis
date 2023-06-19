@@ -18,5 +18,5 @@ for i = 1:length(weinberg_step)
     speed(i) = K*weinberg_step(i) / (max(step_phase{i,1}(:,1) - min(step_phase{i,1}(:,1))));
 end
 
-step_length = weinberg_step;
+step_length = K*weinberg_step;
 end

@@ -4,6 +4,17 @@ function [quat, eInt] = JW_mahony(quat_prev, eInt_prev, acc, gyro, SamplePeriod,
 % % acc = double(1,3)
 % % gyro = double(1,3)
 
+% % 사용 예시 
+% % close all
+% % quat_prev = [1, 0, 0, 0];
+% % eInt_prev = [0, 0, 0];
+% % for i = 1:length(time)
+% %     [quat, eInt] = JW_mahony(quat_prev, eInt_prev, Accelerometer(i,:), Gyroscope(i,:), 1/256, 0.5, 0.1);
+% %     quat_prev = quat;
+% %     eInt_prev = eInt;
+% %     euler5(i,:) = quatern2euler(quaternConj(quat)) * (180/pi);
+% % end
+
 if nargin < 7
     Ki = 0;
 end

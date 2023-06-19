@@ -1,62 +1,72 @@
-function SL = JW_IPM(time, acc, hs_index, height, K, Hz)
-% inverse pendulum model (IPM) step length estimator
-
-% SL: step length
-% height
-% K : calibration coefficient
-% leg length = height * 0.45
-% acc : 헷갈리니까 중력방향 가속도만 넣자
-
-if nargin < 6
-    Hz = 20;
-end
+function [step_time, step_length, timing] = JW_IPM(acc, height, SamplingRate, plot_state, method)
+% acc: free acc, 중력 방향이 3열에 위치한 nx3 행렬
 if nargin < 5
-    K = 1.3; % heading calibration 및 단위 조정 (단위: m/s^2) 후
-%     K = 1.5; % EB IMU raw data (heading calibration 없고, 단위가 G)
+    method = 'simple';
 end
 if nargin < 4
-    height = 1.75;
+    plot_state = 'off';
 end
 
-vel = 0;
-for i = 1:length(acc)
-    try
-        vel(i+1,1) = vel(i,1) + acc(i,1) * (time(i+1,1) - time(i,1));
-    catch
-        vel(i+1,1) = vel(i,1) + acc(i,1) * 1/Hz;
+cutoff_freq = [0.3, 5]; % [0.3, 20];
+g_acc = acc(:,3);
+time = linspace(0, (length(g_acc)-1)/SamplingRate, length(g_acc))';
+[b, a] = butter(3, cutoff_freq/(SamplingRate/2),'bandpass'); % highpass
+acc_butter = filtfilt(b, a, g_acc);
+vel = zeros(size(acc_butter));
+
+% Simple Numerical
+if strcmp(method,'simple')
+    for i = 2:length(acc_butter)
+        vel(i,:) = vel(i-1,:) + acc_butter(i,:)*1/SamplingRate;
+    end
+    vel_butter = filtfilt(b, a, vel);
+    disp = zeros(size(vel_butter));
+    for i = 2:length(disp)
+        disp(i,:) = disp(i-1,:) + vel_butter(i,:)*1/SamplingRate;
     end
 end
-vel = vel(2:end,:);
-step_parse = cell(length(hs_index) - 1, 1);
 
-for i = 1:length(step_parse)
-    step_parse{i,1} = [time(hs_index(i):hs_index(i+1)-1), vel(hs_index(i):hs_index(i+1)-1)];
-    zero_vel = mean(step_parse{i,1}(:,2));
-    step_parse{i,1}(:,2) = step_parse{i,1}(:,2) - zero_vel;
-    init_pos = 0;
-    for j = 1:length(step_parse{i,1})
-        try
-            init_pos(j+1,1) = init_pos(j) + step_parse{i,1}(j,2)*(step_parse{i,1}(j+1,1) - step_parse{i,1}(j,1));
-        catch
-            init_pos(j+1,1) = init_pos(j) + step_parse{i,1}(j,2)*1/Hz;
-        end
+% Runge-kutta
+if strcmp(method, 'RungeKutta')
+    for i = 1:length(acc_butter)-1
+        vel(i+1,:) = vel(i,:) + (acc_butter(i,:)*1/SamplingRate + acc_butter(i+1,:)*1/SamplingRate)/2;
     end
-    step_parse{i,1}(:,3) = init_pos(1:end-1,1);
-    step_parse{i,1}(:,4) = max(step_parse{i,1}(:,3)) - min(step_parse{i,1}(:,3));
-end
-pos = [];
-timestamp = [];
-
-for i = 1:length(step_parse)
-    timestamp = [timestamp; step_parse{i,1}(:,1)];
-    pos = [pos; step_parse{i,1}(:,3)];
+    vel_butter = filtfilt(b, a, vel);
+    disp = zeros(size(vel_butter));
+    for i = 1:length(disp) - 1
+        disp(i+1,:) = disp(i,:) + (vel_butter(i,:)*1/SamplingRate + vel_butter(i+1,:)*1/SamplingRate)/2;
+    end
 end
 
-SL = [];
-K_leg = 0.45;
-L = height * K_leg;
-for i = 1:length(step_parse)
-    h = mean(step_parse{i,1}(:,4));
-    SL = [SL; 2*K*sqrt(2*L*h - h^2)];
+
+disp = abs(disp);
+% disp = smoothdata(disp);
+peak_min = islocalmin(disp, 'MinProminence',0.02);
+peak_max = islocalmax(disp, 'MinProminence',0.02);
+
+if strcmp(plot_state, 'on')
+    plot(time, disp); hold on
+    plot(time(peak_max), disp(peak_max), 'ro'); hold on
+    plot(time(peak_min), disp(peak_min), 'bo')
 end
+
+peak_array = [time(peak_min), disp(peak_min); time(peak_max), disp(peak_max)];
+peak_array = sortrows(peak_array, 1);
+
+r = diff(peak_array, 1, 1);
+step_time = r(:,1);
+r = r(:,2);
+r(abs(r) > 0.1) = 0.1;
+numstep = floor(length(r)/2);
+r_array = reshape(r(1:2*numstep,:), [2, numstep])';
+time_array = reshape(step_time(1:2*numstep,:), [2, numstep])';
+r_array = abs(r_array);
+
+L = height*(1/1.75);
+d = sqrt(L^2 - (L - r_array).^2);
+d = sum(d, 2);
+step_time = sum(time_array, 2);
+step_length = d;
+
+timing = time(peak_min);
 end

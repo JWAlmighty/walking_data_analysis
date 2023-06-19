@@ -1,4 +1,4 @@
-function[fwd, lat, twist] = JW_quat2rpy(quat)
+function[fwd, lat, twist] = JW_quat2rpy(quat, plot_state, find_minimum)
 % input: quaternion
 % output: forward flexion, lateral flexion, twist(i.e. rotation)
 % 1. quat -> rotm
@@ -6,6 +6,12 @@ function[fwd, lat, twist] = JW_quat2rpy(quat)
 % 3. projection (정사영)
 % 4. angle between (direction vector, reference vector)
 % 5. sign using cross product with normal vector
+if nargin <3
+    find_minimum = 1;
+end
+if nargin <2
+    plot_state = 'off';
+end
 
 rotm = quat2rotm(quat);
 x_vec = [ % reference vector 1
@@ -45,16 +51,24 @@ for j = 1:3
         if x_theta(i,j) < 90
             x_dot(i,j) = norm(cross(x(i,:), x_vec(j,:)))/norm(tmp);
             x_dot2(i,j) = norm(cross( x2(i,:), x_vec2(j,:)))/norm(tmp2);
-            if asind(x_dot(i,j)) < asind(x_dot2(i,j))
+            if find_minimum == 1
+                if asind(x_dot(i,j)) < asind(x_dot2(i,j))
+                    x_theta(i,j) = sign(dot(cross(x(i,:), x_vec(j,:)), x_normal(j,:))) * asind(x_dot(i,j));
+                else
+                    x_theta(i,j) = sign(dot(cross(x2(i,:), x_vec2(j,:)), x_normal(j,:))) * asind(x_dot2(i,j));
+                end
+            elseif find_minimum == 2
                 x_theta(i,j) = sign(dot(cross(x(i,:), x_vec(j,:)), x_normal(j,:))) * asind(x_dot(i,j));
-            else
+            elseif find_minimum == 3
                 x_theta(i,j) = sign(dot(cross(x2(i,:), x_vec2(j,:)), x_normal(j,:))) * asind(x_dot2(i,j));
             end
         end
     end
-    subplot(3,1, j)
-    plot(x_theta(:,j)); hold on
-    title(titles(j))
+    if plot_state == "on"
+        subplot(3,1, j)
+        plot(x_theta(:,j)); hold on
+        title(titles(j))
+    end
 end
 fwd = x_theta(:,1);
 lat = x_theta(:,2);
